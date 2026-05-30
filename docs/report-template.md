@@ -2,11 +2,19 @@
 
 ## Title
 
-Short description of the suspected issue.
+Short description of the suspected issue or package being reviewed.
 
 ## Summary
 
 Briefly explain the behavior and why it may matter defensively.
+
+## Scope and Limitations
+
+- Analysis type:
+- Passive-only review:
+- Unknown binaries executed:
+- Authorized environment:
+- Publication restrictions:
 
 ## Environment
 
@@ -21,6 +29,33 @@ Briefly explain the behavior and why it may matter defensively.
 - USB passthrough:
 - Snapshot used:
 
+## File Inventory
+
+| File | Size | Type | Signed | Notes |
+|------|------|------|--------|-------|
+|      |      |      |        |       |
+
+## Static Metadata
+
+Record relevant metadata without executing unknown components:
+
+- Hashes:
+- PE subsystem:
+- Imports:
+- Exports:
+- Strings:
+- Config files:
+- Driver manifests:
+
+## Privilege Layer Mapping
+
+| Layer | Component | Evidence | Defensive Concern |
+|------|-----------|----------|-------------------|
+| Firmware / boot path | | | |
+| Hypervisor | | | |
+| Kernel mode | | | |
+| User mode | | | |
+
 ## Expected Behavior
 
 Describe what should happen.
@@ -28,6 +63,12 @@ Describe what should happen.
 ## Observed Behavior
 
 Describe what actually happened.
+
+## Evidence Confidence
+
+| Claim | Evidence Type | Confidence |
+|------|---------------|------------|
+|      |               |            |
 
 ## Reproduction Conditions
 
