@@ -1,8 +1,8 @@
 # Hypervisor Security Research Lab Notes
 
-This repository documents my independent defensive security research in isolated lab environments, with a focus on hypervisor-based testing, virtualization attack surfaces, and safe vulnerability research methodology.
+This repository documents my independent defensive security research in isolated lab environments, with a focus on hypervisor-based testing, virtualization attack surfaces, safe vulnerability research methodology, and passive analysis of low-level binary packages.
 
-The purpose of this repository is to show a structured, responsible approach to virtualization security research rather than to publish exploit code.
+The purpose of this repository is to show a structured, responsible approach to virtualization security research rather than to publish exploit code or operational bypass instructions.
 
 ## Scope
 
@@ -16,6 +16,8 @@ All research described here is limited to controlled systems that I own or am ex
 - VM-exit and intercept behavior at a high level
 - Nested paging concepts such as NPT/EPT from a defensive perspective
 - MSR and CPUID handling as research topics
+- Passive static analysis of low-level components
+- Privilege-layer mapping across firmware, hypervisor, kernel, and user mode
 - Safe reproduction planning for suspected vulnerabilities
 - Responsible disclosure preparation when a validated issue is identified
 
@@ -40,6 +42,8 @@ Default safety posture:
 docs/
   lab-scope.md
   research-methodology.md
+  passive-binary-audit-methodology.md
+  privilege-layer-model.md
   attack-surface-map.md
   hypervisor-lab-checklist.md
   simplesvm-study-notes.md
@@ -56,9 +60,17 @@ The research process generally follows this structure:
 1. Define the component or trust boundary being reviewed.
 2. Identify expected behavior and assumptions.
 3. Build an isolated and reproducible lab case.
-4. Observe behavior using logs, traces, and configuration review.
-5. Document whether the behavior suggests a defensive concern.
-6. Avoid publishing exploit details unless disclosure is coordinated and authorized.
+4. Prefer passive static analysis before executing unknown components.
+5. Observe behavior using logs, traces, metadata, and configuration review.
+6. Map findings by privilege layer and evidence confidence.
+7. Document whether the behavior suggests a defensive concern.
+8. Avoid publishing exploit details unless disclosure is coordinated and authorized.
+
+## Passive Audit Notes
+
+For unknown low-level packages, the preferred workflow is passive analysis first: file inventory, hashes, PE headers, import/export tables, driver manifests, configuration review, string extraction, and open-source reference comparison.
+
+When documenting a package, components should be mapped by privilege layer: firmware or boot path, hypervisor level, kernel mode, and user mode. This keeps the analysis focused on defensive trust boundaries and risk assessment rather than operational misuse.
 
 ## Ethical Boundaries
 
