@@ -40,15 +40,27 @@ Default safety posture:
 
 ```text
 docs/
-  lab-scope.md
-  research-methodology.md
+  lab-scope.md                      — research scope and boundaries
+  research-methodology.md           — general research workflow
   passive-binary-audit-methodology.md
-  privilege-layer-model.md
+  privilege-layer-model.md          — ring -2 / -1 / 0 / 3 breakdown
   attack-surface-map.md
-  hypervisor-lab-checklist.md
-  simplesvm-study-notes.md
-  report-template.md
-  references.md
+  hypervisor-lab-checklist.md       — pre-flight checklist for lab tests
+  simplesvm-study-notes.md          — AMD SVM / VMCB study notes
+  report-template.md                — passive audit report template
+  references.md                     — tools, projects, vendor docs
+
+examples/
+  cpuid-reader/
+    cpuid_check.c                   — reads CPUID leaves relevant to virtualization
+  kuser-reader/
+    kuser_read.c                    — reads KUSER_SHARED_DATA fields from user mode
+  vmcb-layout/
+    vmcb_structs.h                  — annotated VMCB structure from AMD APM
+    vmexit_handler_skeleton.c       — annotated VMEXIT dispatch skeleton
+  passive-analysis/
+    analyze_pe.ps1                  — PE header parser + string extractor (PowerShell)
+
 SECURITY.md
 DISCLAIMER.md
 ```

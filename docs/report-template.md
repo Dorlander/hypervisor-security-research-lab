@@ -1,90 +1,174 @@
-# Defensive Research Note Template
+# Research Note Template
 
-## Title
+For passive binary audits, hypervisor component studies, or any structured analysis note.
 
-Short description of the suspected issue or package being reviewed.
+---
 
-## Summary
+**Title:**  
+**Date:**  
+**Method:** passive static analysis — string extraction, PE header analysis, INF parsing, config review, open-source reference comparison, Ghidra decompilation  
+**Binaries executed:** No
 
-Briefly explain the behavior and why it may matter defensively.
+---
 
-## Scope and Limitations
+## 1. Summary
+
+What does this package appear to do, which privilege layers does it span, and what is the core defensive concern?
+
+| Layer | Ring | Component | Role |
+|-------|------|-----------|------|
+| UEFI / Firmware | -2 | | |
+| Hypervisor | -1 | | |
+| Kernel | 0 | | |
+| User mode | 3 | | |
+
+---
+
+## 2. Scope and Limitations
 
 - Analysis type:
-- Passive-only review:
-- Unknown binaries executed:
-- Authorized environment:
-- Publication restrictions:
+- Passive only (no execution):
+- Test environment:
+- What static analysis can miss: obfuscated payloads, encrypted sections, time-delayed or network-triggered behavior
 
-## Environment
+---
 
-- Hypervisor:
+## 3. Environment
+
 - Host OS:
 - Guest OS:
-- CPU:
-- Virtualization features:
+- Hypervisor product and version:
+- CPU vendor + virtualization features:
 - Network mode:
-- Shared clipboard:
-- Shared folders:
-- USB passthrough:
-- Snapshot used:
+- Shared clipboard / folders / USB: OFF / OFF / OFF
+- Snapshot taken: Yes / No
 
-## File Inventory
+---
 
-| File | Size | Type | Signed | Notes |
-|------|------|------|--------|-------|
-|      |      |      |        |       |
+## 4. File Inventory
 
-## Static Metadata
+| File | Size (bytes) | Last Modified | Type | Signed | Notes |
+|------|-------------|---------------|------|--------|-------|
+| | | | | | |
 
-Record relevant metadata without executing unknown components:
+**PE Header Summary:**
 
-- Hashes:
-- PE subsystem:
-- Imports:
-- Exports:
-- Strings:
+| File | Machine | Subsystem | Characteristics |
+|------|---------|-----------|----------------|
+| | 0x8664 (x64) | 1 = kernel driver | |
+
+Subsystem reference: `1` = Native/Kernel, `2` = Windows GUI, `3` = Console
+
+---
+
+## 5. How It Works (High Level)
+
+Describe trust boundaries crossed and the sequence of events. No operational step-by-step — focus on what components interact with what privilege levels and in what order.
+
+---
+
+## 6. Component Notes
+
+Repeat this block for each significant binary:
+
+### [filename] — [layer]
+
+- **Based on:** (known open-source project, or closed source)
+- **License:**
+- **Size / Subsystem:**
+- **Key imports:** (APIs that indicate what the component does)
+- **Key strings:**
+- **Modifications from original:** (if it's a known project — what was added?)
+- **Defensive concern:**
+
+**Kernel API patterns worth noting:**
+
+| API | What it suggests |
+|-----|----------------|
+| `MmAllocateContiguousNodeMemory` | VMCB/VMCS allocation — physically contiguous memory for hardware virtualization structures |
+| `KeSetSystemGroupAffinityThread` | Per-core execution — hypervisor init must run on each logical processor |
+| `PsSetCreateProcessNotifyRoutine` | Process creation callback — driver watches for a specific process |
+| `PsLookupProcessByProcessId` | Targeted process lookup — not system-wide, specific PID |
+| `NtQuerySystemInformation(0xC4)` | Check for existing hypervisor before loading another |
+| `ExCreateCallback` + `ExRegisterCallback` | Power state callbacks — needed for sleep/hibernate devirtualization |
+| `KdDebuggerNotPresent` | Direct access to kernel debugger detection variable |
+| `MmMapLockedPagesSpecifyCache` + `MmProbeAndLockPages` | Mapping physical pages into virtual space — shared memory or DMA-style access |
+
+---
+
+## 7. Privilege Layer Map
+
+| Layer | Component | Evidence | Defensive question |
+|------|-----------|----------|--------------------|
+| Firmware / boot | | | Does it run before OS security features initialize? |
+| Hypervisor | | | Does it intercept CPUID, MSR, or RDTSC from below the OS? |
+| Kernel | | | Does it modify kernel structures or bypass driver signing? |
+| User mode | | | Does it launch, configure, or coordinate lower-layer components? |
+
+---
+
+## 8. Static Metadata
+
+- SHA-256 hashes:
+- PE subsystem values:
+- Notable imports:
+- Notable exports:
 - Config files:
-- Driver manifests:
+- INF manifests:
+- Interesting strings:
 
-## Privilege Layer Mapping
+---
 
-| Layer | Component | Evidence | Defensive Concern |
-|------|-----------|----------|-------------------|
-| Firmware / boot path | | | |
-| Hypervisor | | | |
-| Kernel mode | | | |
-| User mode | | | |
+## 9. Open-Source Comparison
 
-## Expected Behavior
+| Component | Likely base project | License | Modified? | What was added |
+|-----------|-------------------|---------|-----------|---------------|
+| | | | | |
 
-Describe what should happen.
+---
 
-## Observed Behavior
+## 10. Risk Notes
 
-Describe what actually happened.
+| Risk | Severity | Details |
+|------|----------|---------|
+| | CRITICAL / HIGH / MEDIUM / LOW | |
 
-## Evidence Confidence
+Questions to answer:
 
-| Claim | Evidence Type | Confidence |
-|------|---------------|------------|
-|      |               |            |
+- Does it require disabling DSE, PatchGuard, Secure Boot, or HVCI?
+- Does it load unsigned kernel drivers?
+- Does it interact with the UEFI boot chain?
+- Does it intercept CPUID, MSR, or RDTSC from ring -1?
+- Does it read/write physical memory to modify protected kernel structures (e.g., `KUSER_SHARED_DATA`, `KdDebuggerNotPresent`, `g_CiEnabled`)?
+- Does it register persistent kernel callbacks (`PsSetCreateProcessNotifyRoutine`, `CmRegisterCallback`, etc.)?
+- Are outbound network connections present in any config or string?
+- Does it leave persistent system changes after the session ends?
 
-## Reproduction Conditions
+---
 
-High-level conditions required to observe the behavior. Avoid weaponized exploit instructions.
+## 11. Evidence Confidence
 
-## Security Impact Hypothesis
+| Claim | Evidence | Confidence |
+|------|----------|-----------|
+| | Confirmed by PE header | High |
+| | Confirmed by import table | High |
+| | Confirmed by strings | Medium |
+| | Matched to open-source project | High |
+| | Inferred from component role | Low |
+| | Unresolved | — |
 
-Explain the potential risk if the behavior is confirmed.
+---
 
-## Mitigations or Defensive Notes
+## 12. Recommendations
 
-Document configuration hardening, monitoring, or isolation improvements.
+Hardening suggestions, monitoring points, or isolation changes based on findings.
 
-## Disclosure Status
+---
 
-- Not security-relevant
-- Needs more validation
-- Reported privately
-- Coordinated disclosure in progress
+## 13. Disclosure
+
+- [ ] Not security-relevant
+- [ ] Needs more evidence
+- [ ] Reported privately to vendor
+- [ ] Coordinated disclosure in progress
+- [ ] Public — after vendor coordination or confirmed no impact
